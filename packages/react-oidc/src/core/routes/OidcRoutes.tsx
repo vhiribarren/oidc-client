@@ -1,4 +1,4 @@
-import {getPath, ILOidcLocation} from '@axa-fr/oidc-client';
+import {getPath, getParseQueryStringFromLocation, ILOidcLocation} from '@axa-fr/oidc-client';
 import React, { ComponentType, FC, PropsWithChildren, useEffect, useState } from 'react';
 
 import CallbackComponent from '../default-component/Callback.component.js';
@@ -41,6 +41,8 @@ const OidcRoutes: FC<PropsWithChildren<OidcRoutesProps>> = ({
   }, []);
 
   const callbackPath = getPath(redirect_uri);
+  const urlQueryParams = getParseQueryStringFromLocation(window.location.href);
+  const urlHasExchangeCode = "code" in urlQueryParams;
 
   if (silent_redirect_uri) {
     if (path === getPath(silent_redirect_uri)) {
@@ -54,12 +56,11 @@ const OidcRoutes: FC<PropsWithChildren<OidcRoutesProps>> = ({
     }
   }
 
-  switch (path) {
-    case callbackPath:
-      return <CallbackComponent callBackError={callbackErrorComponent} callBackSuccess={callbackSuccessComponent} configurationName={configurationName} withCustomHistory={withCustomHistory} />;
-    default:
-      return <>{children}</>;
+  if (path === callbackPath && urlHasExchangeCode) {
+    return <CallbackComponent callBackError={callbackErrorComponent} callBackSuccess={callbackSuccessComponent} configurationName={configurationName} withCustomHistory={withCustomHistory} />;
   }
+
+  return <>{children}</>;
 };
 
 export default React.memo(OidcRoutes);
