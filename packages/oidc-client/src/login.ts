@@ -124,6 +124,11 @@ export const loginCallbackAsync = (oidc:Oidc) => async (isSilentSignin = false) 
             throw new Error(`State not valid (expected: ${state}, received: ${params.state})`);
         }
 
+        if (params.code === undefined) {
+            // Can happen if loginCallbackAsync() is called at the wrong step of the OAuth2 flow
+            throw new Error(`Authorization code received for callback is undefined.`);
+        }
+
         const data = {
             code: params.code,
             grant_type: 'authorization_code',
